@@ -1,0 +1,76 @@
+---
+- name: Download release zabbix #wget https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu20.04_all.deb
+  get_url:
+    url: https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu20.04_all.deb
+    dest: /tmp/zabbix-release.deb
+
+- name: Install a .deb package # dpkg -i /tmp/zabbix-release.deb 
+  apt:
+    deb: /tmp/zabbix-release.deb    
+
+- name: update cache # apt udpate
+  apt:
+    update_cache: yes    
+
+- name: install zabbix
+  apt:
+    name:
+      - zabbix-server-mysql
+      - zabbix-frontend-php
+      - zabbix-nginx-conf
+      - zabbix-sql-scripts
+      - zabbix-agent
+
+- name: create database
+  shell: mysql -uroot -proot -e "create database zabbix character set utf8mb4 collate utf8mb4_bin"
+  ignore_errors: true
+
+- name: create user
+  shell: mysql -uroot -proot -e "create user zabbix@localhost identified by 'password'"
+  ignore_errors: true
+
+- name: grant all privileges
+  shell: mysql -uroot -proot -e "grant all privileges on zabbix.* to zabbix@localhost"
+  ignore_errors: true
+
+- name: set global log_bin_trust_function_creators
+  shell: mysql -uroot -proot -e "set global log_bin_trust_function_creators = 1"
+  ignore_errors: true
+
+- name: import database
+  shell: zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -uzabbix -ppassword zabbix
+  ignore_errors: true
+
+- name: copy zabbix-server.conf
+  template:
+    src: zabbix_server.conf
+    dest: /etc/zabbix/zabbix_server.conf
+
+- name: copy nginx.conf
+  template:
+    src: nginx.conf
+    dest: /etc/zabbix/nginx.conf
+
+- name: start service zabbix-server 
+  service:
+    name: zabbix-server
+    state: restarted
+    enabled: yes
+
+- name: start service zabbix-agent
+  service:
+    name: zabbix-agent
+    state: restarted
+    enabled: yes
+
+- name: start service nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: start service php7.4-fpm
+  service:
+    name: php7.4-fpm
+    state: restarted
+    enabled: yes    

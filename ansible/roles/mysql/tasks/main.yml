@@ -1,0 +1,29 @@
+- name: Install mysql  #apt install mysql-server python3-pymysql python3-pip
+  apt:
+    name:
+      - mysql-server
+      - python3-pymysql
+      - python3-pip
+
+- name: Install Configparser # pip3 install Configparser
+  pip:
+    name:
+      - Configparser
+    executable: pip3
+
+- name: Start mysql service # service mysql start
+  service:
+    name: mysql
+    state: started
+    enabled: true
+
+- name: Update password # mysql update_password
+  mysql_user:
+    name: root
+    password: root
+    host: localhost
+    state: present
+    check_implicit_admin: yes
+    login_host: localhost
+    login_unix_socket: var/run/mysqld/mysqld.sock
+  ignore_errors: true
