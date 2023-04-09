@@ -73,4 +73,6 @@
   service:
     name: php7.4-fpm
     state: restarted
-    enabled: yes    
+    enabled: yes 
+
+...   

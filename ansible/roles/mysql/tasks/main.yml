@@ -1,3 +1,4 @@
+---
 - name: Install mysql  #apt install mysql-server python3-pymysql python3-pip
   apt:
     name:
@@ -27,3 +28,5 @@
     login_host: localhost
     login_unix_socket: var/run/mysqld/mysqld.sock
   ignore_errors: true
+
+...
